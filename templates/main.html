@@ -1,0 +1,10 @@
+{% extends "template.html" %}
+{% block title %}Home{% endblock %}
+{% block body %}
+    <div class="container" style="margin-top: 2%">
+        <h1>Pit Display by Team 1157</h1>
+        <label for="teamNumber">The team number</label>
+        <input type="number" placeholder="Team number" id="teamNumber">
+        <button onclick="location.href = document.getElementById('teamNumber').value">Let's Go!</button>
+    </div>
+{% endblock %}
