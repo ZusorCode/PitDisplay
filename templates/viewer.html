@@ -1,13 +1,49 @@
 {% extends "template.html" %}
-{% block title %}{{ team }}{% endblock %}
-{% block body %}
-    <div class="container" style="margin-top: 2%">
-        <h1>Team {{ team }} - </h1>
-        <h3>Next match in:</h3>
-        <h1 align="center" style="font-size: 70pt">00:00:00</h1>
+{% block title %}{{ team["team_number"] }}{% endblock %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 
+{% block body %}
+    <div class="container" style="margin-top: 2%" onload="loadInfo()">
+        <h1>Team {{ team["team_number"] }} - {{ team["nickname"] }}</h1>
+        <h3 id="next_match_heading">Match ## in:</h3>
+        <h1 align="center" style="font-size: 70pt" id="countdown">00:00:00</h1>
+        {% if request.cookies.get("credits") == "On" %}
+            <p align="center">This pit display was created by Team 1157. Go to <a href="https://pitdisplay.zusor.org">pitdisplay.zusor.org</a> to check it out!</p>
+        {% endif %}
     </div>
 {% endblock %}
 {% block other %}
+    <script>
+        let time = 0;
+        let next_match = {};
+        let previous_match = {};
 
+        function setTimer() {
+            console.log(time);
+            time -= 1;
+            let hours = Math.floor(time / (1000 * 60 * 60));
+            let minutes = Math.floor((time % (1000 * 60 * 60)) / (1000 * 60));
+            let seconds = Math.floor((time % (1000 * 60)) / 1000);
+            $("#countdown").text(hours + ":" + minutes + ":" + seconds);
+        }
+
+        function loadInfo() {
+            $("body").animate({
+                backgroundColor: "rgb(200, 200, 200)"
+            }, 200);
+            $.getJSON("/{{ team["team_number"] }}/event/{{ event["key"] }}/next_previous_match/", function (data) {
+
+                console.log(data);
+                next_match = data[1];
+                previous_match = data[0];
+                $("body").animate({
+                    backgroundColor: "white"
+                }, 200);
+            });
+        }
+
+        window.setInterval(setTimer, 1000);
+
+    </script>
 {% endblock %}

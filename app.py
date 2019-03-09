@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request, make_response
 from datetime import datetime, timedelta
 import tbapy
 
@@ -20,12 +20,25 @@ def get_next_and_previous_match(matches):
         else:
             next_predicted_match = match["key"]
             break
+    if not next_predicted_match:
+        return previous_match, None
     return previous_match, next_predicted_match
 
 
-@app.route('/')
+@app.route("/")
 def home():
-    return render_template("main.html")
+    if not request.cookies.get("credits"):
+        resp = make_response(render_template("main.html", credit_mode="On"))
+        resp.set_cookie("credits", "On")
+        return resp
+    return render_template("main.html", credit_mode=request.cookies.get("credits"))
+
+
+@app.route("/credits/<string:mode>")
+def set_credits(mode):
+    resp = make_response("")
+    resp.set_cookie("credits", mode)
+    return resp
 
 
 @app.route("/<int:team_number>/")
