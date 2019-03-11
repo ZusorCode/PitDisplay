@@ -1,0 +1,22 @@
+{% extends "template.html" %}
+{% block title %}{{ team }}{% endblock %}
+{% block body %}
+    <div class="container" style="margin-top: 2%">
+        <h1>There are no matches for Team {{ team }} here right now!</h1>
+        <h3>This page will auto refresh</h3>
+    </div>
+    {% if request.cookies.get("credits") == "On" %}
+        <div style="position: fixed; left: 50%; bottom: 0; transform: translate(-50%, -50%);">
+            <p align="center">This pit display was created by Team 1157. Go to <a href="https://pitdisplay.zusor.org">pitdisplay.zusor.org</a>
+                to check it out!</p>
+        </div>
+    {% endif %}
+{% endblock %}
+{% block other %}
+    <script>
+    function refresh() {
+        location.reload()
+    }
+    window.setInterval(refresh, 24000)
+    </script>
+{% endblock %}

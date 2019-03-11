@@ -1,0 +1,18 @@
+{% extends "template.html" %}
+{% block title %}{{ team }}{% endblock %}
+{% block body %}
+    <div class="container" style="margin-top: 2%">
+        <h1>This event does not have any seeded matches yet!</h1>
+        <h3>Please come back later.</h3>
+        <h3><a href="/{{ team }}">Back</a></h3>
+    </div>
+    {% if request.cookies.get("credits") == "On" %}
+        <div style="position: fixed; left: 50%; bottom: 0; transform: translate(-50%, -50%);">
+            <p align="center">This pit display was created by Team 1157. Go to <a href="https://pitdisplay.zusor.org">pitdisplay.zusor.org</a>
+                to check it out!</p>
+        </div>
+    {% endif %}
+{% endblock %}
+{% block other %}
+
+{% endblock %}

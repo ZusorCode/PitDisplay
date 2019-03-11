@@ -1,0 +1,33 @@
+{% extends "template.html" %}
+{% block title %}{{ team }}{% endblock %}
+{% block head_extra %}
+    <script src="https://player.twitch.tv/js/embed/v1.js"></script>
+{% endblock %}
+{% block body %}
+    <div class="container" id="slide_match_twitch" style="display: none; margin-top: 2%">
+        <h1>Currently running a match</h1>
+        <div id="twitch-embed" style="display: none"></div>
+
+    </div>
+{% endblock %}
+{% block other %}
+    <script>
+        function decideStream() {
+
+        }
+
+        function twitchEnable() {
+            $("#twitch-embed").show();
+
+            player = new Twitch.Player("twitch-embed", {
+                width: 1000,
+                height: 562,
+                channel: "KarQ",
+                layout: "video"
+            });
+            player.play();
+            twitchEnabled = true;
+        }
+
+    </script>
+{% endblock %}

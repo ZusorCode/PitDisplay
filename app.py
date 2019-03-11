@@ -25,6 +25,13 @@ def get_next_and_previous_match(matches):
     return previous_match, next_predicted_match
 
 
+def check_next_match(matches):
+    for match in matches:
+        if not match["actual_time"]:
+            return True
+    return False
+
+
 @app.route("/")
 def home():
     if not request.cookies.get("credits"):
@@ -45,7 +52,7 @@ def set_credits(mode):
 def team_select(team_number):
     team_object = tba.team(team_number)
     if "Errors" in team_object:
-        return render_template("team_missing.html")
+        return render_template("errors/team_missing.html")
     return render_template("event_select.html", events=tba.team_events(team=team_number, year=year), team=team_number)
 
 
@@ -53,7 +60,9 @@ def team_select(team_number):
 def view_team(team_number, event):
     matches = tba.team_matches(team_number, event=event, year=year, simple=True)
     if not matches:
-        return render_template("no_matches_seeded.html", team=team_number)
+        return render_template("errors/no_matches_seeded.html", team=team_number)
+    if not check_next_match(matches):
+        return render_template("errors/current_no_matches.html", team=team_number)
     event_object = tba.event(event=event)
     team_object = tba.team(team_number)
     return render_template("viewer.html", team=team_object, event=event_object)
@@ -64,8 +73,17 @@ def next_match_info(team_number, event):
     matches = sort_matches(tba.team_matches(team_number, event=event, year=year, simple=True))
     previous_key, next_key = get_next_and_previous_match(matches)
     previous_match = tba.match(key=previous_key)
-    next_match = tba.match(key=next_key)
-    return jsonify([previous_match, next_match])
+    if next_key:
+        next_match = tba.match(key=next_key)
+        next_match["delay"] = next_match["predicted_time"] - datetime.now().timestamp()
+        return jsonify([previous_match, next_match])
+    else:
+        return jsonify([previous_match, None])
+
+
+@app.route("/<int:team_number>/twitch/match/auto_return_done/<string:match_key>/")
+def twitch_view(team_number, match_key):
+    pass
 
 
 @app.route("/<int:team_number>/event/<string:event>/match_info/")

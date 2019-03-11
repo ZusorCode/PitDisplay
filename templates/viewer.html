@@ -1,49 +1,218 @@
 {% extends "template.html" %}
 {% block title %}{{ team["team_number"] }}{% endblock %}
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
-
+{% block onload %}initialize_code(){% endblock %}
 {% block body %}
-    <div class="container" style="margin-top: 2%" onload="loadInfo()">
+    {#    Slide for countdown to next match with basic info.#}
+    <div class="container" id="slide_countdown_next" style="margin-top: 2%">
         <h1>Team {{ team["team_number"] }} - {{ team["nickname"] }}</h1>
         <h3 id="next_match_heading">Match ## in:</h3>
         <h1 align="center" style="font-size: 70pt" id="countdown">00:00:00</h1>
-        {% if request.cookies.get("credits") == "On" %}
-            <p align="center">This pit display was created by Team 1157. Go to <a href="https://pitdisplay.zusor.org">pitdisplay.zusor.org</a> to check it out!</p>
-        {% endif %}
+        <br>
+        <table>
+            <thead>
+            <tr>
+                <th style="color: red"> Red alliance</th>
+                <th style="color: blue; text-align: right">Blue alliance</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td style="color: red" id="red-1">####</td>
+                <td style="color: blue; text-align: right" id="blue-1">####</td>
+            </tr>
+            <tr>
+                <td style="color: red" id="red-2">####</td>
+                <td style="color: blue; text-align: right" id="blue-2">####</td>
+            </tr>
+            <tr>
+                <td style="color: red" id="red-3">####</td>
+                <td style="color: blue; text-align: right" id="blue-3">####</td>
+            </tr>
+            </tbody>
+
+
+        </table>
     </div>
+
+
+    <div class="container" id="slide_post_match" style="display: none; margin-top: 2%">
+        <h1>Victory!</h1>
+    </div>
+
+
+
 {% endblock %}
+
+
 {% block other %}
-    <script>
+    <script type="application/javascript">
         let time = 0;
         let next_match = {};
         let previous_match = {};
+        let loader_loop;
+        let timer_loop;
+        let timer_display_loop;
+        let data_loop;
+        let timer_enabled = false;
+        let last_data_refresh_update = 25;
 
-        function setTimer() {
-            console.log(time);
-            time -= 1;
-            let hours = Math.floor(time / (1000 * 60 * 60));
-            let minutes = Math.floor((time % (1000 * 60 * 60)) / (1000 * 60));
-            let seconds = Math.floor((time % (1000 * 60)) / 1000);
-            $("#countdown").text(hours + ":" + minutes + ":" + seconds);
+
+        let timer_string = "";
+
+        // Set the timeout between refreshing the data automatically
+        // Is called when close to matches to provide accurate time.
+        function setDataRefreshInterval(interval) {
+            console.log("Set refresh interval to " + interval / 1000 + " seconds");
+            clearInterval(data_loop);
+            data_loop = window.setInterval(updateData, interval)
         }
 
-        function loadInfo() {
-            $("body").animate({
-                backgroundColor: "rgb(200, 200, 200)"
-            }, 200);
-            $.getJSON("/{{ team["team_number"] }}/event/{{ event["key"] }}/next_previous_match/", function (data) {
+        // Timer
 
-                console.log(data);
+        function correctDataRefreshInterval(time) {
+            if (time > 0 && last_data_refresh_update >= time / 10) {
+                if (time >= 1800) {
+                    setDataRefreshInterval(300000);
+                } else if (time >= 600) {
+                    setDataRefreshInterval(60000);
+                } else if (time >= 300) {
+                    setDataRefreshInterval(30000);
+                } else if (time <= 300) {
+                    setDataRefreshInterval(10000);
+                } else {
+                    setDataRefreshInterval(10000);
+                }
+            } else {
+                setDataRefreshInterval(10000);
+            }
+            last_data_refresh_update = 0;
+        }
+
+        function updateTimer() {
+            if (time !== 0 || timer_enabled) {
+                time -= 1;
+                last_data_refresh_update += 1;
+                correctDataRefreshInterval(time);
+                if (time >= 0) {
+                    let hours = Math.floor(time / 3600);
+                    let remainder = time % 3600;
+                    let minutes = Math.floor(remainder / 60);
+                    remainder = remainder % 60;
+                    let seconds = remainder;
+                    if (hours < 10) {
+                        hours = "0" + hours;
+                    }
+                    if (minutes < 10) {
+                        minutes = "0" + minutes;
+                    }
+                    if (seconds < 10) {
+                        seconds = "0" + seconds;
+                    }
+                    timer_string = hours + ":" + minutes + ":" + seconds;
+                } else {
+                    let hours = Math.floor(-time / 3600);
+                    let remainder = -time % 3600;
+                    let minutes = Math.floor(remainder / 60);
+                    remainder = remainder % 60;
+                    let seconds = remainder;
+                    if (hours < 10) {
+                        hours = "0" + hours;
+                    }
+                    if (minutes < 10) {
+                        minutes = "0" + minutes;
+                    }
+                    if (seconds < 10) {
+                        seconds = "0" + seconds;
+                    }
+                    timer_string = "-" + hours + ":" + minutes + ":" + seconds;
+
+
+                    timer_enabled = true;
+                }
+
+
+            }
+        }
+
+        function diplayTimer() {
+            $("#countdown").text(timer_string);
+
+        }
+
+        // Slide control
+
+        function hideSlides() {
+            $("#slide_countdown_next").hide();
+            $("#slide_post_match").hide();
+        }
+
+        function viewSlide(name) {
+            hideSlides();
+            switch (name) {
+                case "countdown":
+                    $("#slide_countdown_next").show();
+                    break;
+                case "post_match":
+                    $("#slide_post_match").show();
+            }
+
+        }
+
+        // Loading animations
+        function run_animation() {
+            $("body").animate({
+                backgroundColor: "rgb(215, 226, 226)"
+            }, 300);
+            $("body").animate({
+                backgroundColor: "rgb(189, 204, 204)"
+            }, 300);
+        }
+
+        function startLoad() {
+            loader_loop = setInterval(run_animation, 200);
+        }
+
+        function stopLoad() {
+            window.clearInterval(loader_loop);
+            $("body").animate({
+                backgroundColor: "white"
+            }, 300);
+        }
+
+        // Update text that will not be constantly updated (for example Match number, not time)
+
+        function updateSimpleTitles() {
+            $("#next_match_heading").text("Match " + next_match["match_number"] + " in:");
+            $("#red-1").text(next_match["alliances"]["red"]["team_keys"][0].replace("frc", ""));
+            $("#red-2").text(next_match["alliances"]["red"]["team_keys"][1].replace("frc", ""));
+            $("#red-3").text(next_match["alliances"]["red"]["team_keys"][2].replace("frc", ""));
+            $("#blue-1").text(next_match["alliances"]["red"]["team_keys"][0].replace("frc", ""));
+            $("#blue-2").text(next_match["alliances"]["red"]["team_keys"][1].replace("frc", ""));
+            $("#blue-3").text(next_match["alliances"]["red"]["team_keys"][2].replace("frc", ""));
+
+        }
+
+        // Update the variables that store the next and previous match
+
+        function updateData() {
+            console.log("Checking for new data...");
+            startLoad();
+            $.getJSON("/{{ team["team_number"] }}/event/{{ event["key"] }}/next_previous_match/", function (data) {
                 next_match = data[1];
                 previous_match = data[0];
-                $("body").animate({
-                    backgroundColor: "white"
-                }, 200);
+                time = parseInt(next_match["delay"]);
+                updateSimpleTitles();
+                stopLoad();
             });
         }
 
-        window.setInterval(setTimer, 1000);
 
+        // Initialize some loops. Called onload
+        function initialize_code() {
+            updateData();
+            timer_loop = window.setInterval(updateTimer, 1000);
+            timer_display_loop = window.setInterval(diplayTimer, 1000);
+
+        }
     </script>
 {% endblock %}

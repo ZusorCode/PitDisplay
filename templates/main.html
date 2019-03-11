@@ -13,6 +13,8 @@
         <button onclick="toggleCredits()" id="credits" style="background-color: {{ "red" if credit_mode == "On" else "limegreen" }}">Turn credits {{ "Off" if credit_mode == "On" else "On" }}</button>
     </div>
 {% endblock %}
+{% block credit %}
+{% endblock %}
 {% block other %}
     <script>
         function submit() {

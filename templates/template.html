@@ -8,10 +8,19 @@
     <link rel="stylesheet" href="//cdn.rawgit.com/milligram/milligram/master/dist/milligram.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    {% block head_extra %}{% endblock %}
 
 </head>
-<body>
+<body onload="{% block onload %}{% endblock %}">
 {% block body %}
+{% endblock %}
+{% block credit %}
+    {% if request.cookies.get("credits") == "On" %}
+        <div style="position: fixed; left: 50%; bottom: 0; transform: translate(-50%, -50%);">
+            <p align="center">This pit display was created by Team 1157. Go to <a href="https://pitdisplay.zusor.org">pitdisplay.zusor.org</a>
+                to use it for your own team!</p>
+        </div>
+    {% endif %}
 {% endblock %}
 {% block other %}
 {% endblock %}
