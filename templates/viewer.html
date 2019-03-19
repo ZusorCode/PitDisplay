@@ -2,7 +2,7 @@
 {% block title %}{{ team["team_number"] }}{% endblock %}
 {% block onload %}initialize_code(){% endblock %}
 {% block body %}
-    {#    Slide for countdown to next match with basic info.#}
+    {#    Slide for countdown to next match with basic info.#}c
     <div class="container" id="slide_countdown_next" style="margin-top: 2%">
         <h1>Team {{ team["team_number"] }} - {{ team["nickname"] }}</h1>
         <h3 id="next_match_heading">Match ## in:</h3>
@@ -36,7 +36,13 @@
 
 
     <div class="container" id="slide_post_match" style="display: none; margin-top: 2%">
-        <h1>Victory!</h1>
+        <h1 id="match-result-text">Match result unknown!</h1>
+        <h3>COLOR alliance wins!!</h3>
+    </div>
+
+    <div class="container" id="slide_standings" style="display: none; margin-top: 2%">
+        <h1>Team {{ team["team_number"] }}'s standings!</h1>
+        <h3 id="standings-text">No standings loaded</h3>
     </div>
 
 
@@ -47,52 +53,50 @@
 {% block other %}
     <script type="application/javascript">
         let time = 0;
+        let timer_enabled = false;
+
+
         let next_match = {};
         let previous_match = {};
+        let status = {};
+
         let loader_loop;
         let timer_loop;
         let timer_display_loop;
         let data_loop;
-        let timer_enabled = false;
-        let last_data_refresh_update = 25;
+        let data_refresh_checker_loop;
+
+        let next_refresh = Date.now();
 
 
         let timer_string = "";
 
         // Set the timeout between refreshing the data automatically
         // Is called when close to matches to provide accurate time.
-        function setDataRefreshInterval(interval) {
-            console.log("Set refresh interval to " + interval / 1000 + " seconds");
-            clearInterval(data_loop);
-            data_loop = window.setInterval(updateData, interval)
-        }
 
         // Timer
 
-        function correctDataRefreshInterval(time) {
-            if (time > 0 && last_data_refresh_update >= time / 10) {
+        function getRefreshInterval(time) {
+            if (time > 0) {
                 if (time >= 1800) {
-                    setDataRefreshInterval(300000);
+                    return 300000;
                 } else if (time >= 600) {
-                    setDataRefreshInterval(60000);
+                    return 60000;
                 } else if (time >= 300) {
-                    setDataRefreshInterval(30000);
+                    return 30000;
                 } else if (time <= 300) {
-                    setDataRefreshInterval(10000);
+                    return 10000;
                 } else {
-                    setDataRefreshInterval(10000);
+                    return 10000;
                 }
             } else {
-                setDataRefreshInterval(10000);
+                return 10000;
             }
-            last_data_refresh_update = 0;
         }
 
         function updateTimer() {
             if (time !== 0 || timer_enabled) {
                 time -= 1;
-                last_data_refresh_update += 1;
-                correctDataRefreshInterval(time);
                 if (time >= 0) {
                     let hours = Math.floor(time / 3600);
                     let remainder = time % 3600;
@@ -134,7 +138,7 @@
             }
         }
 
-        function diplayTimer() {
+        function displayTimer() {
             $("#countdown").text(timer_string);
 
         }
@@ -201,9 +205,21 @@
                 next_match = data[1];
                 previous_match = data[0];
                 time = parseInt(next_match["delay"]);
-                updateSimpleTitles();
-                stopLoad();
+                $.getJSON("/{{ team["team_number"] }}/event/{{ event["key"] }}/standings/", function (data) {
+                    status = data[1];
+                    time = parseInt(next_match["delay"]);
+                    updateSimpleTitles();
+                    stopLoad();
+                });
             });
+
+        }
+
+        function dataRefresher() {
+            if (Date.now() > next_refresh) {
+                updateData();
+                next_refresh = Date.now() + getRefreshInterval(time);
+            }
         }
 
 
@@ -211,8 +227,8 @@
         function initialize_code() {
             updateData();
             timer_loop = window.setInterval(updateTimer, 1000);
-            timer_display_loop = window.setInterval(diplayTimer, 1000);
-
+            timer_display_loop = window.setInterval(displayTimer, 1000);
+            data_refresh_checker_loop = window.setInterval(dataRefresher, 1000);
         }
     </script>
 {% endblock %}

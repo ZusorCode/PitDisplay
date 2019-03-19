@@ -32,6 +32,16 @@ def check_next_match(matches):
     return False
 
 
+def get_team_alliance(match, team_number):
+    for team in match["alliances"]["blue"]["team_keys"]:
+        if f"frc{team_number}" == team:
+            return "blue"
+    for team in match["alliances"]["red"]["team_keys"]:
+        if f"frc{team_number}" == team:
+            return "blue"
+    return None
+
+
 @app.route("/")
 def home():
     if not request.cookies.get("credits"):
@@ -73,23 +83,26 @@ def next_match_info(team_number, event):
     matches = sort_matches(tba.team_matches(team_number, event=event, year=year, simple=True))
     previous_key, next_key = get_next_and_previous_match(matches)
     previous_match = tba.match(key=previous_key)
+    previous_match["our_team_alliance"] = get_team_alliance(previous_match, team_number)
     if next_key:
         next_match = tba.match(key=next_key)
         next_match["delay"] = next_match["predicted_time"] - datetime.now().timestamp()
+        next_match["our_team_alliance"] = get_team_alliance(next_match, team_number)
         return jsonify([previous_match, next_match])
     else:
         return jsonify([previous_match, None])
-
-
-@app.route("/<int:team_number>/twitch/match/auto_return_done/<string:match_key>/")
-def twitch_view(team_number, match_key):
-    pass
 
 
 @app.route("/<int:team_number>/event/<string:event>/match_info/")
 def match_info(team_number, event):
     matches = tba.team_matches(team_number, event=event, year=year, simple=True)
     return jsonify(matches)
+
+
+@app.route("/<int:team_number>/event/<string:event>/standings/")
+def standings(team_number, event):
+    team_standings = tba.team_status(team_number, event)
+    return jsonify(team_standings)
 
 
 if __name__ == '__main__':

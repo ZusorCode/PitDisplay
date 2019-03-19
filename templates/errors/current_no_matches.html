@@ -5,12 +5,6 @@
         <h1>There are no matches for Team {{ team }} here right now!</h1>
         <h3>This page will auto refresh</h3>
     </div>
-    {% if request.cookies.get("credits") == "On" %}
-        <div style="position: fixed; left: 50%; bottom: 0; transform: translate(-50%, -50%);">
-            <p align="center">This pit display was created by Team 1157. Go to <a href="https://pitdisplay.zusor.org">pitdisplay.zusor.org</a>
-                to check it out!</p>
-        </div>
-    {% endif %}
 {% endblock %}
 {% block other %}
     <script>
