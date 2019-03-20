@@ -82,15 +82,16 @@ def view_team(team_number, event):
 def next_match_info(team_number, event):
     matches = sort_matches(tba.team_matches(team_number, event=event, year=year, simple=True))
     previous_key, next_key = get_next_and_previous_match(matches)
+    standings = tba.team_status(team_number, event)
     previous_match = tba.match(key=previous_key)
     previous_match["our_team_alliance"] = get_team_alliance(previous_match, team_number)
     if next_key:
         next_match = tba.match(key=next_key)
         next_match["delay"] = next_match["predicted_time"] - datetime.now().timestamp()
         next_match["our_team_alliance"] = get_team_alliance(next_match, team_number)
-        return jsonify([previous_match, next_match])
+        return jsonify([previous_match, next_match, standings])
     else:
-        return jsonify([previous_match, None])
+        return jsonify([previous_match, None, standings])
 
 
 @app.route("/<int:team_number>/event/<string:event>/match_info/")
@@ -99,10 +100,13 @@ def match_info(team_number, event):
     return jsonify(matches)
 
 
-@app.route("/<int:team_number>/event/<string:event>/standings/")
-def standings(team_number, event):
-    team_standings = tba.team_status(team_number, event)
-    return jsonify(team_standings)
+@app.route("/demo")
+def demo():
+    team_number = 1157
+    event = "2019code"
+    event_object = tba.event(event=event)
+    team_object = tba.team(team_number)
+    return render_template("viewer.html", team=team_object, event=event_object)
 
 
 if __name__ == '__main__':

@@ -37,7 +37,7 @@
 
     <div class="container" id="slide_post_match" style="display: none; margin-top: 2%">
         <h1 id="match-result-text">Match result unknown!</h1>
-        <h3>COLOR alliance wins!!</h3>
+        <h3 id="match-result-long">COLOR alliance wins!!</h3>
     </div>
 
     <div class="container" id="slide_standings" style="display: none; margin-top: 2%">
@@ -63,7 +63,6 @@
         let loader_loop;
         let timer_loop;
         let timer_display_loop;
-        let data_loop;
         let data_refresh_checker_loop;
 
         let next_refresh = Date.now();
@@ -140,7 +139,6 @@
 
         function displayTimer() {
             $("#countdown").text(timer_string);
-
         }
 
         // Slide control
@@ -158,6 +156,9 @@
                     break;
                 case "post_match":
                     $("#slide_post_match").show();
+
+                case "standings":
+                    $("#slide_standings").show();
             }
 
         }
@@ -166,8 +167,7 @@
         function run_animation() {
             $("body").animate({
                 backgroundColor: "rgb(215, 226, 226)"
-            }, 300);
-            $("body").animate({
+            }, 300).animate({
                 backgroundColor: "rgb(189, 204, 204)"
             }, 300);
         }
@@ -193,6 +193,13 @@
             $("#blue-1").text(next_match["alliances"]["red"]["team_keys"][0].replace("frc", ""));
             $("#blue-2").text(next_match["alliances"]["red"]["team_keys"][1].replace("frc", ""));
             $("#blue-3").text(next_match["alliances"]["red"]["team_keys"][2].replace("frc", ""));
+            if (previous_match["our_team_alliance"] === previous_match["winning_alliance"]) {
+                $("#match-result-text").text("Victory").css("color", "green");
+            } else {
+                $("#match-result-text").text("Defeat").css("color", "red")
+            }
+            $("#match-result-long").text("The " + previous_match["winning_alliance"] + " alliance wins!");
+
 
         }
 
@@ -204,13 +211,10 @@
             $.getJSON("/{{ team["team_number"] }}/event/{{ event["key"] }}/next_previous_match/", function (data) {
                 next_match = data[1];
                 previous_match = data[0];
+                status = data[2];
                 time = parseInt(next_match["delay"]);
-                $.getJSON("/{{ team["team_number"] }}/event/{{ event["key"] }}/standings/", function (data) {
-                    status = data[1];
-                    time = parseInt(next_match["delay"]);
-                    updateSimpleTitles();
-                    stopLoad();
-                });
+                updateSimpleTitles();
+                stopLoad();
             });
 
         }
