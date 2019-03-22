@@ -196,6 +196,12 @@
             $("#blue-1").text(next_match["alliances"]["blue"]["team_keys"][0].replace("frc", ""));
             $("#blue-2").text(next_match["alliances"]["blue"]["team_keys"][1].replace("frc", ""));
             $("#blue-3").text(next_match["alliances"]["blue"]["team_keys"][2].replace("frc", ""));
+            if (next_match["our_team_alliance"] === "blue") {
+                $("#countdown").css("color", "blue")
+            } else {
+                $("#countdown").css("color", "red")
+
+            }
 
 
         }
