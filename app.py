@@ -20,6 +20,8 @@ def get_next_and_previous_match(matches):
         else:
             next_predicted_match = match["key"]
             break
+    if not previous_match:
+        return None, next_predicted_match
     if not next_predicted_match:
         return previous_match, None
     return previous_match, next_predicted_match
@@ -83,16 +85,21 @@ def next_match_info(team_number, event):
     matches = sort_matches(tba.team_matches(team_number, event=event, year=year, simple=True))
     previous_key, next_key = get_next_and_previous_match(matches)
     standings = tba.team_status(team_number, event)
-    previous_match = tba.match(key=previous_key)
-    previous_match["our_team_alliance"] = get_team_alliance(previous_match, team_number)
+    if previous_key:
+        previous_match = tba.match(key=previous_key)
+        previous_match["our_team_alliance"] = get_team_alliance(previous_match, team_number)
     if next_key:
         next_match = tba.match(key=next_key)
         next_match["delay"] = next_match["predicted_time"] - datetime.now().timestamp()
         next_match["our_team_alliance"] = get_team_alliance(next_match, team_number)
+    if previous_key and next_key:
         return jsonify([previous_match, next_match, standings])
-    else:
+    elif previous_key:
         return jsonify([previous_match, None, standings])
-
+    elif next_key:
+        return jsonify([None, next_match, standings])
+    else:
+        return [None, None, standings]
 
 @app.route("/<int:team_number>/event/<string:event>/match_info/")
 def match_info(team_number, event):

@@ -193,12 +193,6 @@
             $("#blue-1").text(next_match["alliances"]["red"]["team_keys"][0].replace("frc", ""));
             $("#blue-2").text(next_match["alliances"]["red"]["team_keys"][1].replace("frc", ""));
             $("#blue-3").text(next_match["alliances"]["red"]["team_keys"][2].replace("frc", ""));
-            if (previous_match["our_team_alliance"] === previous_match["winning_alliance"]) {
-                $("#match-result-text").text("Victory").css("color", "green");
-            } else {
-                $("#match-result-text").text("Defeat").css("color", "red")
-            }
-            $("#match-result-long").text("The " + previous_match["winning_alliance"] + " alliance wins!");
 
 
         }
