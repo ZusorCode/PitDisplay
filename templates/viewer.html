@@ -64,8 +64,11 @@
         let timer_loop;
         let timer_display_loop;
         let data_refresh_checker_loop;
+        let page_reset_loop;
 
         let next_refresh = Date.now();
+        let running_refresh = false;
+        let refresh_start = Date.now();
 
 
         let timer_string = "";
@@ -200,6 +203,8 @@
         // Update the variables that store the next and previous match
 
         function updateData() {
+            running_refresh = true;
+            refresh_start = Date.now();
             console.log("Checking for new data...");
             startLoad();
             $.getJSON("/{{ team["team_number"] }}/event/{{ event["key"] }}/next_previous_match/", function (data) {
@@ -209,6 +214,7 @@
                 time = parseInt(next_match["delay"]);
                 updateSimpleTitles();
                 stopLoad();
+                running_refresh = false;
             });
 
         }
@@ -220,6 +226,14 @@
             }
         }
 
+        function hardReloadCheck() {
+            if (running_refresh) {
+                if (Date.now() - refresh_start > 5000) {
+                    location.reload();
+                }
+            }
+        }
+
 
         // Initialize some loops. Called onload
         function initialize_code() {
@@ -227,6 +241,7 @@
             timer_loop = window.setInterval(updateTimer, 1000);
             timer_display_loop = window.setInterval(displayTimer, 1000);
             data_refresh_checker_loop = window.setInterval(dataRefresher, 1000);
+            page_reset_loop = window.setInterval(hardReloadCheck, 1000);
         }
     </script>
 {% endblock %}
