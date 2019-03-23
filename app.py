@@ -40,7 +40,7 @@ def get_team_alliance(match, team_number):
             return "blue"
     for team in match["alliances"]["red"]["team_keys"]:
         if f"frc{team_number}" == team:
-            return "blue"
+            return "red"
     return None
 
 
