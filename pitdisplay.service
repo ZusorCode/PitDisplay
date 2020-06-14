@@ -1,0 +1,14 @@
+[Unit]
+Description=Service for PitDisplay app
+After=network.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=tobias
+WorkingDirectory=/home/tobias/PitDisplay
+ExecStart=/usr/bin/pipenv run gunicorn app:app -b 0.0.0.0:6001
+
+[Install]
+WantedBy=multi-user.target
