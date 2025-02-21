@@ -6,8 +6,8 @@ After=network.target
 Type=simple
 Restart=always
 RestartSec=1
-User=tobias
-WorkingDirectory=/home/tobias/PitDisplay
+User=ada
+WorkingDirectory=/home/ada/PitDisplay
 ExecStart=/usr/bin/pipenv run gunicorn app:app -b 0.0.0.0:6001
 
 [Install]

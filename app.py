@@ -109,8 +109,8 @@ def match_info(team_number, event):
 
 @app.route("/demo")
 def demo():
-    team_number = 1157
-    event = "2019code"
+    team_number = 2036
+    event = "2025code"
     event_object = tba.event(event=event)
     team_object = tba.team(team_number)
     return render_template("viewer.html", team=team_object, event=event_object)
