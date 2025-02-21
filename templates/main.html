@@ -2,7 +2,7 @@
 {% block title %}Home{% endblock %}
 {% block body %}
     <div class="container" style="margin-top: 2%">
-        <h1>Pit Display by Team 1157</h1>
+        <h1>Pit Display by Team 1157 and 2036</h1>
         <label for="teamNumber">Team number</label>
         <input type="number"
                onKeyDown="if(event.keyCode===13) submit();"
@@ -10,7 +10,6 @@
         <button onclick="submit()">Let's Go!</button>
         <br>
         <label for="credits">When credits are enabled a link to this page will be shown on the main page. Thanks for giving credit!</label>
-        <button onclick="toggleCredits()" id="credits" style="background-color: {{ "red" if credit_mode == "On" else "limegreen" }}">Turn credits {{ "Off" if credit_mode == "On" else "On" }}</button>
     </div>
 {% endblock %}
 {% block credit %}
